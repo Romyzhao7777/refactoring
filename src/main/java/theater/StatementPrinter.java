@@ -99,27 +99,46 @@ public class StatementPrinter {
     }
 
     /**
+     * Calculates the total volume credits for all performances in the invoice.
+     * @return the total volume credits
+     */
+    private int getTotalVolumeCredits() {
+        int result = 0;
+        for (Performance p : getInvoice().getPerformances()) {
+            // add volume credits
+            result += getVolumeCredits(p);
+        }
+        return result;
+    }
+
+    /**
+     * Calculates the total amount owed for all performances in the invoice.
+     * @return the total amount in cents
+     */
+    private int getTotalAmount() {
+        int result = 0;
+        for (Performance p : getInvoice().getPerformances()) {
+            result += getAmount(p);
+        }
+        return result;
+    }
+
+    /**
      * Returns a formatted statement of the invoice associated with this printer.
      * @return the formatted statement
      * @throws RuntimeException if one of the play types is not known
      */
     public String statement() {
-        int totalAmount = 0;
-        int volumeCredits = 0;
         final StringBuilder result = new StringBuilder("Statement for "
                 + getInvoice().getCustomer() + System.lineSeparator());
 
         for (Performance p : getInvoice().getPerformances()) {
-            // add volume credits
-            volumeCredits += getVolumeCredits(p);
-
             // print line for this order
             result.append(String.format("  %s: %s (%s seats)%n", getPlay(p).getName(),
                     usd(getAmount(p)), p.getAudience()));
-            totalAmount += getAmount(p);
         }
-        result.append(String.format("Amount owed is %s%n", usd(totalAmount)));
-        result.append(String.format("You earned %s credits%n", volumeCredits));
+        result.append(String.format("Amount owed is %s%n", usd(getTotalAmount())));
+        result.append(String.format("You earned %s credits%n", getTotalVolumeCredits()));
         return result.toString();
     }
 }
