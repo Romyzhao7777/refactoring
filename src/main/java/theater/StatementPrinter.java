@@ -90,6 +90,15 @@ public class StatementPrinter {
     }
 
     /**
+     * Formats the given amount in cents as a US dollar amount string.
+     * @param amountInCents the amount in cents to format
+     * @return the formatted dollar amount string
+     */
+    private String usd(int amountInCents) {
+        return NumberFormat.getCurrencyInstance(Locale.US).format(amountInCents / Constants.PERCENT_FACTOR);
+    }
+
+    /**
      * Returns a formatted statement of the invoice associated with this printer.
      * @return the formatted statement
      * @throws RuntimeException if one of the play types is not known
@@ -100,18 +109,16 @@ public class StatementPrinter {
         final StringBuilder result = new StringBuilder("Statement for "
                 + getInvoice().getCustomer() + System.lineSeparator());
 
-        final NumberFormat frmt = NumberFormat.getCurrencyInstance(Locale.US);
-
         for (Performance p : getInvoice().getPerformances()) {
             // add volume credits
             volumeCredits += getVolumeCredits(p);
 
             // print line for this order
             result.append(String.format("  %s: %s (%s seats)%n", getPlay(p).getName(),
-                    frmt.format(getAmount(p) / Constants.PERCENT_FACTOR), p.getAudience()));
+                    usd(getAmount(p)), p.getAudience()));
             totalAmount += getAmount(p);
         }
-        result.append(String.format("Amount owed is %s%n", frmt.format(totalAmount / Constants.PERCENT_FACTOR)));
+        result.append(String.format("Amount owed is %s%n", usd(totalAmount)));
         result.append(String.format("You earned %s credits%n", volumeCredits));
         return result.toString();
     }
